@@ -1,9 +1,15 @@
-openapi: '3.0.0'
+openapi: 3.0.0
 info:
   title: Test
   version: '1.0'
 servers:
-- url: http://localhost:3000
-paths: {}
+  - url: 'http://localhost:3000'
+paths:
+  /help:
+    get:
+      summary: help
+      tags: []
+      responses: {}
+      operationId: get-help
 components:
   schemas: {}
