@@ -1,0 +1,13 @@
+title: Category
+type: object
+x-tags:
+  - '1780'
+properties:
+  completed:
+    type:
+      - boolean
+      - 'null'
+  name:
+    type: string
+  id:
+    type: string
