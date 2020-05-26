@@ -9,7 +9,9 @@ paths:
     get:
       summary: addresses
       tags: []
-      responses: {}
+      responses:
+        '200':
+          description: OK
       operationId: get-addresses
 components:
   schemas:
@@ -22,3 +24,8 @@ components:
           example: attribute-level 400 message
         test:
           type: string
+      x-examples:
+        model-level-example:
+          code: '400'
+          message: model-level 400 message
+      description: 400 message
