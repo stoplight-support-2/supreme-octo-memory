@@ -1,4 +1,13 @@
-Order:
+openapi: 3.0.0
+info:
+  title: Model.v1
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths: {}
+components:
+  schemas:
+    Order:
   title: Order
   type: object
   x-tags:

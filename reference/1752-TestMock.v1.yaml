@@ -26,13 +26,601 @@ components:
       title: 400
       type: object
       properties:
+        test:
+          type: string
         code:
           type: string
           example: attribute-level 400 message
-        test:
-          type: string
       x-examples:
         model-level-example:
           code: '400'
           message: model-level 400 message
       description: 400 message
+  Order:
+  title: Order
+  type: object
+  x-tags:
+    - models
+  description: |-
+    ### Overview
+    Represents an order which consists of at least one line item and one fulfilment.
+
+    A line item is simply a individual item/product/SKU that the customer wishes to purchase, while a fulfilment represents "how" the order will make its way to the customer.
+
+    ### Fulfilments
+    At a high-level we currently support two "types" of fulfilments: self-collection and delivery.
+
+    A self-collection fulfilment is denoted with a type a `type` of `dine_in`, `take_away` or `self_serve`, and indicates that the customer is responsible for retrieving the order from the merchant. A delivery filfillment is denoted with a type of `delivery` and indicates that either the merchant or a third party will physically take the order to the customer.
+
+    Regardless of the fulfilment type, some basic rules always apply:
+
+    - An order may automatically be accepted on behalf of the merchant, however if explicit acceptance is required `merchant_must_accept_before` will be set.
+    - A customer can cancel an order up to the point that the merchant accepts the order.
+    - A merchant can cancel an order up to the point that a customer collects it or it is sucesfully delivered to the customer.
+  properties:
+    uuid:
+      type: string
+      format: uuid
+      description: The unique identifier for the order.
+    number:
+      type: string
+      description: The customer collection number associated with the order. This may not be unique.
+    outlet:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The unique identifier for outlet where the order was placed.
+        name:
+          type: string
+          description: The name of the outlet where the order was placed.
+    customer:
+      type:
+        - 'null'
+        - object
+      description: "The customer's details, if provided at the time the order was placed."
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The unique identifier of the mapping between the user/merchant.
+        name:
+          type:
+            - string
+            - 'null'
+          description: 'The name of the customer, if known.'
+        phone_number:
+          type:
+            - string
+            - 'null'
+          description: 'The phone number of the customer, if known.'
+        email:
+          type:
+            - string
+            - 'null'
+          format: email
+          description: "The customer's email address, if known."
+    source:
+      type: string
+      description: The name of the application where the order was placed.
+    fulfilments:
+      type: array
+      maxItems: 1
+      minItems: 1
+      description: |-
+        The fulfilments associated with the order.
+
+        Currently only one fulfilment per-order is supported, however future API version will permit more than one entry in this field.
+      items:
+        type: object
+        properties:
+          uuid:
+            type: string
+            format: uuid
+            description: The unique identifier for the fulfilment.
+          type:
+            type: string
+            enum:
+              - delivery
+              - take_away
+              - dine_in
+              - self_serve
+            description: The type of fulfilment.
+          on_hold:
+            type: boolean
+            description: 'Indiciates if the fulfilment is "on hold" until futher notice.'
+          collection_details:
+            format: date-time
+            type:
+              - object
+              - 'null'
+            description: |-
+              The details of the collection that will take place.
+
+              This field will be null unless `type` is one of `take_away`, `dine_in` or `self_serve`.
+            properties:
+              merchant_must_accept_before:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant must accept this order by otherwise it will automatically be cancelled and refunded to the customer.
+
+                  This field will be null if the order was automatically accepted on behalf of the merchant.
+              merchant_accepted_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant accepted the order.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
+
+                  If this field is null when `ready_at` is set it will inherit its value.
+              start_preparing_at:
+                type: string
+                format: date-time
+                description: |-
+                  The date/time that the merchant should start preparing this order.
+
+                  This value is read-only.
+              customer_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The date/time that the customer cancelled the order.
+
+                  This field is read-only.
+              merchant_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant marked this order as cancelled.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `customer_collected_at` has non-null value.
+              merchant_cancellation_reason:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The reason indicating why the merchant cancelled the order.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `customer_collected_at` has non-null value.
+              customer_arriving_at:
+                type: string
+                format: date-time
+                description: |-
+                  The date/time that the customer will arrive in-store to collect their order.
+
+                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `customer_collected_at` has non-null value.
+              ready_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the order was ready to be collected by the customer.
+
+                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `customer_collected_at` has non-null value.
+
+                  If this field is null when `customer_collected_at` is set it will inherit that value.
+              customer_collected_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the customer collected this order.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
+              order_collection_identifier:
+                type:
+                  - 'null'
+                  - object
+                description: |-
+                  The "identifier" that a customer can use to claim their order at the time of collection.
+
+                  A order collection identifier could be a table number, electronic buzzer, stickers or some other entity that suits the merchant's workflow.
+                properties:
+                  name:
+                    type: string
+                    example: Table Number
+                    description: The human-readable name of the identifier.
+                  value:
+                    type: string
+                    example: TBL-9
+                    description: The value entered by the customer during the ordering process.
+          delivery_details:
+            type:
+              - object
+              - 'null'
+            description: |-
+              The details of the delivery that will take place.
+
+              This field will be null unless `type` is `delivery`.
+            properties:
+              merchant_must_accept_before:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The date/time that the merchant must accept this order by otherwise it will automatically be cancelled and refunded to the customer.
+
+                  This field will be null if the order was automatically accepted on behalf of the merchant.
+                format: date-time
+              merchant_accepted_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant accepted the order.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
+
+                  If this field is null when `ready_at` is set it will inherit its value.
+              start_preparing_at:
+                type: string
+                format: date-time
+                description: |-
+                  The date/time that the merchant should start preparing this order.
+
+                  This value is read-only.
+              customer_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the customer cancelled the order.
+
+                  This field is read-only.
+              merchant_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant marked this order as cancelled.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `dispatched_at` has non-null value.
+              merchant_cancellation_reason:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The reason indicating why the merchant cancelled the order.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `ready_at` has non-null value.
+              driver_arriving_at:
+                type: string
+                format: date-time
+                description: |-
+                  The date/time that the driver is expected to arrive to collect the order.
+
+                  This field is read-only.
+              ready_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the order was ready to be dispatched for delivery.
+
+                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `dispatched_at` has non-null value.
+
+                  If this field is null when `dispatched_at` is set it will inherit its value.
+              dispatched_at:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The date/time that the order was dispatched/collected for delivery to the customer.
+
+                  This field is read-only if `carrier` is `third_party`.
+
+                  If this field is null when `delivered_at` is set it will inherit its value.
+                format: date-time
+              delivered_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the order was successfully delivered to the customer.
+
+                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has a non-null value.
+              carrier:
+                type: string
+                description: Indicates if this delivery will be fulfiled by the merchant or a third party.
+                enum:
+                  - merchant
+                  - third_party
+              third_party_driver_details:
+                type:
+                  - object
+                  - 'null'
+                description: |-
+                  The carrier that will fulfil this order on behalf of the merchant.
+
+                  This field will be null unless `carrier` is `third_party`.
+                properties:
+                  name:
+                    type: string
+                    description: The name of the driver.
+                  phone_number:
+                    type: string
+                    description: The phone number of the driver.
+                  photo:
+                    type: string
+                    format: uri
+                    description: A url to the photo of the driver assigned to the delivery.
+              address:
+                type: object
+                description: The address that the order should be delivered to.
+                properties:
+                  formatted:
+                    type: string
+                    description: The localised delivery address.
+                  latitude:
+                    type: number
+                    format: double
+                  longitude:
+                    type: number
+                    format: double
+              receiver:
+                type: object
+                description: The entity that will recieve the order.
+                properties:
+                  name:
+                    type: string
+                  phone_number:
+                    type: string
+    line_items:
+      type: array
+      items:
+        type: object
+        properties:
+          uuid:
+            type: string
+            format: uuid
+            description: The unique identifier for the line item.
+          name:
+            type: string
+            description: The name of the line item.
+          source_item:
+            type:
+              - string
+              - 'null'
+            format: uuid
+            description: |-
+              The UUID of the item on the merchant's menu that this item was built from.
+
+              This field will be `null` if the item was manually entered via POS.
+
+              This field is read-only once set.
+          qty:
+            type: integer
+            minimum: 1
+            description: The qty of the line item.
+          loyalty_redemption:
+            type: boolean
+            description: 'Indicates if this line-item is part of a loyalty redemption made by the customer, which indicates why the price is different from that of the `source_item`.'
+          base_price:
+            $ref: Money.v1.yaml
+          modifiers:
+            type: array
+            description: The modifiers that were selected with the line item.
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                  description: The unique identifier for the modifier.
+                name:
+                  type: string
+                  description: The name of the modifier.
+                source_modifier:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
+                  description: |-
+                    The UUID of the modifier on the merchant's menu that this modifier was built from.
+
+                    This field will be `null` if the modifier was manually entered via POS.
+
+                    This field is read-only once set.
+                qty:
+                  type: integer
+                  minimum: 1
+                  description: The qty of the modifier.
+                base_price:
+                  $ref: Money.v1.yaml
+                sub_total:
+                  $ref: Money.v1.yaml
+                total:
+                  $ref: Money.v1.yaml
+          meal:
+            type:
+              - object
+              - 'null'
+            description: The meal (if any) that was selected with the line item.
+            properties:
+              uuid:
+                type: string
+                format: uuid
+                description: The unique identifier for the meal.
+              name:
+                type: string
+                description: The name of the meal.
+              source_meal:
+                type:
+                  - string
+                  - 'null'
+                format: uuid
+                description: |-
+                  The UUID of the meal on the merchant's menu that this meal was built from.
+
+                  This field will be `null` if the meal was manually entered via POS.
+
+                  This field is read-only once set.
+              modifiers:
+                type: array
+                description: The modifiers that were selected with the meal.
+                items:
+                  type: object
+                  properties:
+                    uuid:
+                      type: string
+                      format: uuid
+                      description: The unique identifier for the modifier.
+                    name:
+                      type: string
+                      description: The name of the modifier.
+                    source_modifier:
+                      type:
+                        - string
+                        - 'null'
+                      format: uuid
+                      description: |-
+                        The UUID of the modifier on the merchant's menu that this modifier was built from.
+
+                        This field will be `null` if the modifier was manually entered via POS.
+
+                        This field is read-only once set.
+                    qty:
+                      type: integer
+                      minimum: 1
+                      description: The qty of the modifier.
+                    base_price:
+                      $ref: Money.v1.yaml
+                    sub_total:
+                      $ref: Money.v1.yaml
+                    total:
+                      $ref: Money.v1.yaml
+              base_price:
+                $ref: Money.v1.yaml
+              sub_total:
+                $ref: Money.v1.yaml
+              total:
+                $ref: Money.v1.yaml
+          sub_total:
+            $ref: Money.v1.yaml
+          discounts:
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                  description: The unique identifier for the discount.
+                name:
+                  type: string
+                  description: The name of the discount that was applied.
+                value:
+                  $ref: Money.v1.yaml
+          total_discounts:
+            $ref: Money.v1.yaml
+          surcharges:
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                  description: The unique identifier for the surcharge.
+                name:
+                  type: string
+                  description: The name of the surcharge that was applied.
+                value:
+                  $ref: Money.v1.yaml
+          total_surcharges:
+            $ref: Money.v1.yaml
+          taxes:
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                  description: The unique identifier for the tax.
+                name:
+                  type: string
+                  description: The name of the discount that was levied.
+                value:
+                  $ref: Money.v1.yaml
+          total_taxes:
+            $ref: Money.v1.yaml
+          total:
+            $ref: Money.v1.yaml
+    customer_notes:
+      type:
+        - string
+        - 'null'
+      maxLength: 255
+      description: Notes entered by the customer at the time the order was placed.
+    merchant_notes:
+      type:
+        - string
+        - 'null'
+      maxLength: 255
+      description: 'Notes entered by the merchant, which can be edited at any time.'
+    sub_total:
+      $ref: Money.v1.yaml
+    discounts:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: The name of the discount that was applied.
+          value:
+            $ref: Money.v1.yaml
+    total_discounts:
+      $ref: Money.v1.yaml
+    surcharges:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: The name of the surcharge that was applied.
+          value:
+            $ref: Money.v1.yaml
+    total_surcharges:
+      $ref: Money.v1.yaml
+    taxes:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: The name of the tax that was levied.
+          value:
+            $ref: Money.v1.yaml
+    total_taxes:
+      $ref: Money.v1.yaml
+    total:
+      $ref: Money.v1.yaml
+    cash_rounding:
+      $ref: Money.v1.yaml
+    balance:
+      $ref: Money.v1.yaml
+    transactions:
+      type: array
+      description: The transactions/payments that have been made against this order.
+      items: {}
