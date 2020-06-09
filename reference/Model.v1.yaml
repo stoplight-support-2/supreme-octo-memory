@@ -1,451 +1,835 @@
 openapi: 3.0.0
 info:
-  title: Model.v1
+  title: POS Service
   version: '1.0'
+  description: Powers YQueue POS.
 servers:
-  - url: 'http://localhost:3000'
-paths: {}
-components:
-  schemas:
-    Order:
-  title: Order
-  type: object
-  x-tags:
-    - models
-  description: |-
-    ### Overview
-    Represents an order which consists of at least one line item and one fulfilment.
-
-    A line item is simply a individual item/product/SKU that the customer wishes to purchase, while a fulfilment represents "how" the order will make its way to the customer.
-
-    ### Fulfilments
-    At a high-level we currently support two "types" of fulfilments: self-collection and delivery.
-
-    A self-collection fulfilment is denoted with a type a `type` of `dine_in`, `take_away` or `self_serve`, and indicates that the customer is responsible for retrieving the order from the merchant. A delivery filfillment is denoted with a type of `delivery` and indicates that either the merchant or a third party will physically take the order to the customer.
-
-    Regardless of the fulfilment type, some basic rules always apply:
-
-    - An order may automatically be accepted on behalf of the merchant, however if explicit acceptance is required `merchant_must_accept_before` will be set.
-    - A customer can cancel an order up to the point that the merchant accepts the order.
-    - A merchant can cancel an order up to the point that a customer collects it or it is sucesfully delivered to the customer.
-  properties:
-    uuid:
-      type: string
-      format: uuid
-      description: The unique identifier for the order.
-    number:
-      type: string
-      description: The customer collection number associated with the order. This may not be unique.
-    outlet:
-      type: object
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: The unique identifier for outlet where the order was placed.
-        name:
-          type: string
-          description: The name of the outlet where the order was placed.
-    customer:
-      type:
-        - 'null'
-        - object
-      description: "The customer's details, if provided at the time the order was placed."
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: The unique identifier of the mapping between the user/merchant.
-        name:
-          type:
-            - string
-            - 'null'
-          description: 'The name of the customer, if known.'
-        phone_number:
-          type:
-            - string
-            - 'null'
-          description: 'The phone number of the customer, if known.'
-        email:
-          type:
-            - string
-            - 'null'
-          format: email
-          description: "The customer's email address, if known."
-    source:
-      type: string
-      description: The name of the application where the order was placed.
-    fulfilments:
-      type: array
-      maxItems: 1
-      minItems: 1
+  - url: 'https://api.yqueue.tech/v1.0/private/pos'
+    description: Production
+  - url: 'https://api.staging.yqueue.co/v1.0/private/pos'
+    description: Staging
+paths:
+  /installation/profile:
+    post:
+      summary: Activate POS
+      operationId: pos-service-activate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                    description: The terminal's UUID.
+                  app:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        description: The platform-specific application version.
+                        example: 2.0.0
+                  device:
+                    type: object
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - 'null'
+                        example: John's iPad
+                        description: The device name (if available).
+                      manufacturer:
+                        type:
+                          - string
+                          - 'null'
+                        example: Apple
+                        description: The device manufacturer.
+                      model:
+                        type:
+                          - string
+                          - 'null'
+                        example: A1823
+                        description: The device model.
+                      os:
+                        type: object
+                        properties:
+                          platform:
+                            type: string
+                            enum:
+                              - ios
+                              - android
+                            description: The platform/os the device is running.
+                          version:
+                            type: string
+                            description: The version of the platform/os the device is running.
+                            example: 13.2.1
+                  outlet:
+                    type:
+                      - object
+                      - 'null'
+                    description: 'The outlet that has been linked to the terminal, if any.'
+                    properties:
+                      uuid:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                  auth:
+                    type: string
+                    description: The unique auth token associated with this terminal.
       description: |-
-        The fulfilments associated with the order.
+        When a POS installation is first started this endpoint should be invoked to securely generate a unique identifier for the terminal.
 
-        Currently only one fulfilment per-order is supported, however future API version will permit more than one entry in this field.
-      items:
-        type: object
-        properties:
-          uuid:
-            type: string
-            format: uuid
-            description: The unique identifier for the fulfilment.
-          type:
-            type: string
-            enum:
-              - delivery
-              - take_away
-              - dine_in
-              - self_serve
-            description: The type of fulfilment.
-          on_hold:
-            type: boolean
-            description: 'Indiciates if the fulfilment is "on hold" until futher notice.'
-          collection_details:
-            format: date-time
-            type:
-              - object
-              - 'null'
-            description: |-
-              The details of the collection that will take place.
+        Thr identifier (herein refered to as the "auth token") must be sent in the `X-POS-AUTH` header on all future requests to the API and should be securely stored on the device.
 
-              This field will be null unless `type` is one of `take_away`, `dine_in` or `self_serve`.
-            properties:
-              merchant_must_accept_before:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the merchant must accept this order by otherwise it will automatically be cancelled and refunded to the customer.
-
-                  This field will be null if the order was automatically accepted on behalf of the merchant.
-              merchant_accepted_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the merchant accepted the order.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
-
-                  If this field is null when `ready_at` is set it will inherit its value.
-              start_preparing_at:
-                type: string
-                format: date-time
-                description: |-
-                  The date/time that the merchant should start preparing this order.
-
-                  This value is read-only.
-              customer_cancelled_at:
-                type:
-                  - string
-                  - 'null'
-                description: |-
-                  The date/time that the customer cancelled the order.
-
-                  This field is read-only.
-              merchant_cancelled_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the merchant marked this order as cancelled.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `customer_collected_at` has non-null value.
-              merchant_cancellation_reason:
-                type:
-                  - string
-                  - 'null'
-                description: |-
-                  The reason indicating why the merchant cancelled the order.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `customer_collected_at` has non-null value.
-              customer_arriving_at:
-                type: string
-                format: date-time
-                description: |-
-                  The date/time that the customer will arrive in-store to collect their order.
-
-                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `customer_collected_at` has non-null value.
-              ready_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the order was ready to be collected by the customer.
-
-                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `customer_collected_at` has non-null value.
-
-                  If this field is null when `customer_collected_at` is set it will inherit that value.
-              customer_collected_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the customer collected this order.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
-              order_collection_identifier:
-                type:
-                  - 'null'
-                  - object
-                description: |-
-                  The "identifier" that a customer can use to claim their order at the time of collection.
-
-                  A order collection identifier could be a table number, electronic buzzer, stickers or some other entity that suits the merchant's workflow.
-                properties:
-                  name:
-                    type: string
-                    example: Table Number
-                    description: The human-readable name of the identifier.
-                  value:
-                    type: string
-                    example: TBL-9
-                    description: The value entered by the customer during the ordering process.
-          delivery_details:
-            type:
-              - object
-              - 'null'
-            description: |-
-              The details of the delivery that will take place.
-
-              This field will be null unless `type` is `delivery`.
-            properties:
-              merchant_must_accept_before:
-                type:
-                  - string
-                  - 'null'
-                description: |-
-                  The date/time that the merchant must accept this order by otherwise it will automatically be cancelled and refunded to the customer.
-
-                  This field will be null if the order was automatically accepted on behalf of the merchant.
-                format: date-time
-              merchant_accepted_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the merchant accepted the order.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
-
-                  If this field is null when `ready_at` is set it will inherit its value.
-              start_preparing_at:
-                type: string
-                format: date-time
-                description: |-
-                  The date/time that the merchant should start preparing this order.
-
-                  This value is read-only.
-              customer_cancelled_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the customer cancelled the order.
-
-                  This field is read-only.
-              merchant_cancelled_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the merchant marked this order as cancelled.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `dispatched_at` has non-null value.
-              merchant_cancellation_reason:
-                type:
-                  - string
-                  - 'null'
-                description: |-
-                  The reason indicating why the merchant cancelled the order.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `ready_at` has non-null value.
-              driver_arriving_at:
-                type: string
-                format: date-time
-                description: |-
-                  The date/time that the driver is expected to arrive to collect the order.
-
-                  This field is read-only.
-              ready_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the order was ready to be dispatched for delivery.
-
-                  This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `dispatched_at` has non-null value.
-
-                  If this field is null when `dispatched_at` is set it will inherit its value.
-              dispatched_at:
-                type:
-                  - string
-                  - 'null'
-                description: |-
-                  The date/time that the order was dispatched/collected for delivery to the customer.
-
-                  This field is read-only if `carrier` is `third_party`.
-
-                  If this field is null when `delivered_at` is set it will inherit its value.
-                format: date-time
-              delivered_at:
-                type:
-                  - string
-                  - 'null'
-                format: date-time
-                description: |-
-                  The date/time that the order was successfully delivered to the customer.
-
-                  This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has a non-null value.
-              carrier:
-                type: string
-                description: Indicates if this delivery will be fulfiled by the merchant or a third party.
-                enum:
-                  - merchant
-                  - third_party
-              third_party_driver_details:
-                type:
-                  - object
-                  - 'null'
-                description: |-
-                  The carrier that will fulfil this order on behalf of the merchant.
-
-                  This field will be null unless `carrier` is `third_party`.
-                properties:
-                  name:
-                    type: string
-                    description: The name of the driver.
-                  phone_number:
-                    type: string
-                    description: The phone number of the driver.
-                  photo:
-                    type: string
-                    format: uri
-                    description: A url to the photo of the driver assigned to the delivery.
-              address:
-                type: object
-                description: The address that the order should be delivered to.
-                properties:
-                  formatted:
-                    type: string
-                    description: The localised delivery address.
-                  latitude:
-                    type: number
-                    format: double
-                  longitude:
-                    type: number
-                    format: double
-              receiver:
-                type: object
-                description: The entity that will recieve the order.
-                properties:
-                  name:
-                    type: string
-                  phone_number:
-                    type: string
-    line_items:
-      type: array
-      items:
-        type: object
-        properties:
-          uuid:
-            type: string
-            format: uuid
-            description: The unique identifier for the line item.
-          name:
-            type: string
-            description: The name of the line item.
-          source_item:
-            type:
-              - string
-              - 'null'
-            format: uuid
-            description: |-
-              The UUID of the item on the merchant's menu that this item was built from.
-
-              This field will be `null` if the item was manually entered via POS.
-
-              This field is read-only once set.
-          qty:
-            type: integer
-            minimum: 1
-            description: The qty of the line item.
-          loyalty_redemption:
-            type: boolean
-            description: 'Indicates if this line-item is part of a loyalty redemption made by the customer, which indicates why the price is different from that of the `source_item`.'
-          base_price:
-            $ref: ../models/Money.v1.yaml
-          modifiers:
-            type: array
-            description: The modifiers that were selected with the line item.
-            items:
+        The request/response is refered to a "installation profile" and is intended to represent the current application version and basic details of the host device.
+      requestBody:
+        content:
+          application/json:
+            schema:
               type: object
               properties:
-                uuid:
+                app:
+                  type: object
+                  properties:
+                    version:
+                      type: string
+                      description: The platform-specific application version.
+                      example: 2.0.0
+                  required:
+                    - version
+                device:
+                  type: object
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                      example: John's iPad
+                      description: The device name (if available).
+                    manufacturer:
+                      type:
+                        - string
+                        - 'null'
+                      example: Apple
+                      description: The device manufacturer.
+                    model:
+                      type:
+                        - string
+                        - 'null'
+                      example: A1823
+                      description: The device model.
+                    os:
+                      type: object
+                      properties:
+                        platform:
+                          type: string
+                          enum:
+                            - ios
+                            - android
+                          description: The platform/os the device is running.
+                        version:
+                          type: string
+                          description: The version of the platform/os the device is running.
+                          example: 13.2.1
+                      required:
+                        - platform
+                        - version
+                  required:
+                    - name
+                    - manufacturer
+                    - model
+        description: ''
+      security: []
+      tags:
+        - installation-profile
+    patch:
+      summary: Update Installation Profile
+      operationId: pos-service-synchronize-installation-profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                    description: The terminal's UUID.
+                  app:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        description: The platform-specific application version.
+                        example: 2.0.0
+                  device:
+                    type: object
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - 'null'
+                        example: John's iPad
+                        description: The device name (if available).
+                      manufacturer:
+                        type:
+                          - string
+                          - 'null'
+                        example: Apple
+                        description: The device manufacturer.
+                      model:
+                        type:
+                          - string
+                          - 'null'
+                        example: A1823
+                        description: The device model.
+                      os:
+                        type: object
+                        properties:
+                          platform:
+                            type: string
+                            enum:
+                              - ios
+                              - android
+                            description: The platform/os the device is running.
+                          version:
+                            type: string
+                            description: The version of the platform/os the device is running.
+                            example: 13.2.1
+                  outlet:
+                    type:
+                      - object
+                      - 'null'
+                    description: 'The outlet that has been linked to the terminal, if any.'
+                    properties:
+                      uuid:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+      description: |-
+        Provides the abiltiy to synchronize an existing installation profile with the API.
+
+        This method should be invoked every time the POS "starts up" to ensure we have an accurate record of all deployed devices.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device:
+                  type: object
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - 'null'
+                      example: John's iPad
+                      description: The device name (if available).
+                    manufacturer:
+                      type:
+                        - string
+                        - 'null'
+                      example: Apple
+                      description: The device manufacturer.
+                    model:
+                      type:
+                        - string
+                        - 'null'
+                      example: A1823
+                      description: The device model.
+                    os:
+                      type: object
+                      properties:
+                        platform:
+                          type: string
+                          enum:
+                            - ios
+                            - android
+                          description: The platform/os the device is running.
+                        version:
+                          type: string
+                          description: The version of the platform/os the device is running.
+                          example: 13.2.1
+                app:
+                  type: object
+                  properties:
+                    version:
+                      type: string
+                      description: The platform-specific application version.
+                      example: 2.0.0
+        description: ''
+      tags:
+        - installation-profile
+  /websocket/auth:
+    post:
+      summary: Websocket Authorization
+      operationId: pos-service-post-websocket-auth
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth:
+                    type: string
+                    description: The auth token to supply Pusher when connecting to the socket.
+                  channel_data:
+                    type: string
+                    description: JSON-encoded channel data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel_name:
                   type: string
-                  format: uuid
-                  description: The unique identifier for the modifier.
-                name:
+                  description: The name of the channel that the terminal wishes to connect to.
+                  example: presence-pos.828708d6-1f91-4da8-9ba2-a6855499902c
+                socket_id:
                   type: string
-                  description: The name of the modifier.
-                source_modifier:
+                  description: The unique socket ID.
+                  example: '6156.72868'
+              required:
+                - channel_name
+                - socket_id
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                channel_name:
+                  type: string
+                  example: presence-pos.81e4039c-275e-4f61-8718-33715db7da0e
+                  description: The name of the channel to connect to.
+                socket_id:
+                  type: string
+                  example: '6156.72868'
+                  description: The unique websocket ID.
+        description: ''
+      description: |-
+        Provides the ability to generate a websocket authorization token.
+
+        This endpoint should be invoked immediately before the POS terminal attempts to connect to any presence or private Pusher channels. The following channels are supported:
+
+        ### presence-pos.{uuid}
+        The presence channel for the POS terminal, where `uuid` is the UUID of the terminal.
+      tags:
+        - websockets
+  /configuration:
+    get:
+      summary: Retrieve Configuration
+      tags:
+        - configuration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+      operationId: pos-service-get-configuration
+      description: |-
+        Provides the ability for a terminal to retrieve the latest value of each configuration paramater that is managed by the API on behalf of the terminal.
+
+        If the terminal has not been linked to a outlet this endpoint is not accessible and will return an error.
+    patch:
+      summary: Update Configuration
+      operationId: pos-service-update-configuration
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+      description: |-
+        Provides the ability for a terminal to update the values for each configuration paramater that is managed by the API on behalf of the terminal.
+
+        If the terminal has not been linked to a outlet this endpoint is not accessible and will return an error.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auto_mark_order_as_complete_after_minutes:
                   type:
-                    - string
+                    - integer
                     - 'null'
-                  format: uuid
+                  minimum: 5
+                  maximum: 720
+                  multipleOf: 5
                   description: |-
-                    The UUID of the modifier on the merchant's menu that this modifier was built from.
+                    The period of time that can elapse (in minutes) before the terminal should automatically mark an order as complete.
 
-                    This field will be `null` if the modifier was manually entered via POS.
+                    When null the feature should be disabled.
+                accept_online_orders:
+                  type: boolean
+                  description: 'Indicates if this outlet is currently accepting "online orders", which is any source other than POS or Kiosk.'
+                accept_kiosk_orders:
+                  type: boolean
+                  description: |-
+                    Indicates if this outlet is currently accepting orders from kiosk terminals.
 
-                    This field is read-only once set.
-                qty:
-                  type: integer
-                  minimum: 1
-                  description: The qty of the modifier.
-                base_price:
-                  $ref: ../models/Money.v1.yaml
-                sub_total:
-                  $ref: ../models/Money.v1.yaml
-                total:
-                  $ref: ../models/Money.v1.yaml
-          meal:
-            type:
-              - object
-              - 'null'
-            description: The meal (if any) that was selected with the line item.
+                    This property exists to maintain backwards compatibility with Kiosk v2 and will be deprecated in the future when Kiosk v3 is deployed.
+        description: ''
+      tags:
+        - configuration
+  '/configuration/linking-code/{uuid}':
+    parameters:
+      - schema:
+          type: string
+        name: uuid
+        in: path
+        required: true
+        description: The UUID of a linking code that the authenticated POS terminal created.
+    get:
+      summary: Retrieve Linking Code
+      tags:
+        - linking-codes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Linking-Code'
+      operationId: pos-service-retrieve-linking-code
+      description: Provides the ability to retrieve an existing linking code.
+  /configuration/linking-code:
+    post:
+      summary: Create Linking Code
+      operationId: post-service-create-linking-code
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Linking-Code'
+      description: Provides the ability to generate a linking code.
+      tags:
+        - linking-codes
+components:
+  schemas:
+    Configuration:
+      title: Configuration
+      type: object
+      properties:
+        accept_kiosk_orders:
+          type: boolean
+          description: |-
+            Indicates if this outlet is currently accepting orders from kiosk terminals.
+
+            This property exists to maintain backwards compatibility with Kiosk v2 and will be deprecated in the future when Kiosk v3 is deployed.
+        accept_online_orders:
+          type: boolean
+          description: 'Indicates if this outlet is currently accepting "online orders", which is any source other than POS or Kiosk.'
+        auto_mark_order_as_complete_after_minutes:
+          type:
+            - integer
+            - 'null'
+          description: |-
+            The period of time that can elapse (in minutes) before the terminal should automatically mark an order as complete.
+
+            When null the feature should be disabled.
+          minimum: 5
+          maximum: 720
+          multipleOf: 5
+      x-tags:
+        - models
+      description: Represents the POS configuration managed by the API.
+    Linking-Code:
+      title: Linking Code
+      type: object
+      description: Represents a linking code generated by a terminal.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The unique identifier for this linking code.
+        status:
+          type: string
+          description: |-
+            The current status of the linking code.
+
+            `pending` - Waiting to be associated with a outlet.
+
+            `linked` - Has been linked with a outlet.
+
+            `expired` - Was not linked to a outlet before the expiration time, and can no longer be linked.
+          enum:
+            - pending
+            - linked
+            - expired
+        expires_at:
+          type: string
+          description: The last possible date/time that this linking code can be used.
+          format: date-time
+        outlet:
+          type:
+            - object
+            - 'null'
+          description: |-
+            The core details of the outlet that was linked, if any.
+
+            This field will always be null unless `status` is `linked`.
+          properties:
+            uuid:
+              type: string
+              format: uuid
+            name:
+              type: string
+      x-tags:
+        - models
+    Order:
+      title: Order
+      type: object
+      x-tags:
+        - models
+      description: |-
+        ### Overview
+        Represents an order which consists of at least one line item and one fulfilment.
+
+        A line item is simply a individual item/product/SKU that the customer wishes to purchase, while a fulfilment represents "how" the order will make its way to the customer.
+
+        ### Fulfilments
+        At a high-level we currently support two "types" of fulfilments: self-collection and delivery.
+
+        A self-collection fulfilment is denoted with a type a `type` of `dine_in`, `take_away` or `self_serve`, and indicates that the customer is responsible for retrieving the order from the merchant. A delivery filfillment is denoted with a type of `delivery` and indicates that either the merchant or a third party will physically take the order to the customer.
+
+        Regardless of the fulfilment type, some basic rules always apply:
+
+        - An order may automatically be accepted on behalf of the merchant, however if explicit acceptance is required `merchant_must_accept_before` will be set.
+        - A customer can cancel an order up to the point that the merchant accepts the order.
+        - A merchant can cancel an order up to the point that a customer collects it or it is sucesfully delivered to the customer.
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The unique identifier for the order.
+        number:
+          type: string
+          description: The customer collection number associated with the order. This may not be unique.
+        outlet:
+          type: object
+          properties:
+            uuid:
+              type: string
+              format: uuid
+              description: The unique identifier for outlet where the order was placed.
+            name:
+              type: string
+              description: The name of the outlet where the order was placed.
+        customer:
+          type:
+            - 'null'
+            - object
+          description: 'The customer''s details, if provided at the time the order was placed.'
+          properties:
+            uuid:
+              type: string
+              format: uuid
+              description: The unique identifier of the mapping between the user/merchant.
+            name:
+              type:
+                - string
+                - 'null'
+              description: 'The name of the customer, if known.'
+            phone_number:
+              type:
+                - string
+                - 'null'
+              description: 'The phone number of the customer, if known.'
+            email:
+              type:
+                - string
+                - 'null'
+              format: email
+              description: 'The customer''s email address, if known.'
+        source:
+          type: string
+          description: The name of the application where the order was placed.
+        fulfilments:
+          type: array
+          maxItems: 1
+          minItems: 1
+          description: |-
+            The fulfilments associated with the order.
+
+            Currently only one fulfilment per-order is supported, however future API version will permit more than one entry in this field.
+          items:
+            type: object
             properties:
               uuid:
                 type: string
                 format: uuid
-                description: The unique identifier for the meal.
+                description: The unique identifier for the fulfilment.
+              type:
+                type: string
+                enum:
+                  - delivery
+                  - take_away
+                  - dine_in
+                  - self_serve
+                description: The type of fulfilment.
+              on_hold:
+                type: boolean
+                description: Indiciates if the fulfilment is "on hold" until futher notice.
+              merchant_must_accept_before:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The date/time that the merchant must accept this order by otherwise it will automatically be cancelled and refunded to the customer.
+
+                  This field will be null if the order was automatically accepted on behalf of the merchant.
+                format: date-time
+              merchant_accepted_at:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The date/time that the merchant accepted the order.
+
+                  This field is read-only once set or if the order has been cancelled.
+
+                  If this field is null when `ready_at` is set it will inherit its value.
+                format: date-time
+              start_preparing_at:
+                type: string
+                format: date-time
+                description: |-
+                  The date/time that the merchant should start preparing this order.
+
+                  This value is read-only.
+              ready_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant finished preparing the oprder.
+
+                  This field is read-only if the order has been cancelled or previously collected.
+
+                  If this field is _null_ when collected by the customer or a delivery driver this field will inherit the time of that event.
+              customer_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the customer cancelled the order.
+
+                  This field is read-only.
+              merchant_cancelled_at:
+                type:
+                  - string
+                  - 'null'
+                format: date-time
+                description: |-
+                  The date/time that the merchant marked this order as cancelled.
+
+                  This field is read-only once set or if the order has previously been cancelled or has been dispatched to a delivery driver.
+              merchant_cancellation_reason:
+                type:
+                  - string
+                  - 'null'
+                description: |-
+                  The reason indicating why the merchant cancelled the order.
+
+                  This field is read-only once set and can only be set alongside `merchant_cancelled_at`.
+              collection_details:
+                format: date-time
+                type:
+                  - object
+                  - 'null'
+                description: |-
+                  The details of the collection that will take place.
+
+                  This field will be null unless `type` is one of `take_away`, `dine_in` or `self_serve`.
+                properties:
+                  customer_arriving_at:
+                    type: string
+                    format: date-time
+                    description: |-
+                      The date/time that the customer will arrive in-store to collect their order.
+
+                      This field is read-only if `customer_cancelled_at`, `merchant_cancelled_at` or `customer_collected_at` has non-null value.
+                  customer_collected_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                    description: |-
+                      The date/time that the customer collected this order.
+
+                      This field is read-only once set or if `customer_cancelled_at` or `merchant_cancelled_at` has non-null value.
+                  order_collection_identifier:
+                    type:
+                      - 'null'
+                      - object
+                    description: |-
+                      The "identifier" that a customer can use to claim their order at the time of collection.
+
+                      A order collection identifier could be a table number, electronic buzzer, stickers or some other entity that suits the merchant's workflow.
+                    properties:
+                      name:
+                        type: string
+                        example: Table Number
+                        description: The human-readable name of the identifier.
+                      value:
+                        type: string
+                        example: TBL-9
+                        description: The value entered by the customer during the ordering process.
+              delivery_details:
+                type:
+                  - object
+                  - 'null'
+                description: |-
+                  The details of the delivery that will take place.
+
+                  This field will be null unless `type` is `delivery`.
+                properties:
+                  driver_arriving_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                    description: |-
+                      The date/time that the driver is expected to arrive to collect the order.
+
+                      This field is read-only.
+                  driver_cancelled_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                    description: |-
+                      The date/time that the driver marked this order as cancelled.
+
+                      This field is read-only.
+                  driver_cancellation_reason:
+                    type:
+                      - string
+                      - 'null'
+                    description: |-
+                      The reason indicating why the driver cancelled the order.
+
+                      This field is read-only.
+                  driver_collected_at:
+                    type:
+                      - string
+                      - 'null'
+                    description: |-
+                      The date/time that the order was dispatched/collected for delivery to the customer.
+
+                      This field is read-only if `carrier` is `third_party` or if the order has been cancelled.
+
+                      If this field is null when `delivered_at` is set it will inherit its value.
+                    format: date-time
+                  delivered_at:
+                    type:
+                      - string
+                      - 'null'
+                    format: date-time
+                    description: |-
+                      The date/time that the order was successfully delivered to the customer.
+
+                      This field is read-only once set or if `customer_cancelled_at`, `merchant_cancelled_at` or `driver_cancelled_at` has a non-null value.
+                  carrier:
+                    type: string
+                    description: Indicates if this delivery will be fulfiled by the merchant or a third party.
+                    enum:
+                      - merchant
+                      - third_party
+                  third_party_driver_details:
+                    type:
+                      - object
+                      - 'null'
+                    description: |-
+                      The carrier that will fulfil this order on behalf of the merchant.
+
+                      This field will be null unless `carrier` is `third_party`.
+                    properties:
+                      name:
+                        type: string
+                        description: The name of the driver.
+                      phone_number:
+                        type: string
+                        description: The phone number of the driver.
+                      photo:
+                        type: string
+                        format: uri
+                        description: A url to the photo of the driver assigned to the delivery.
+                  address:
+                    type: object
+                    description: The address that the order should be delivered to.
+                    properties:
+                      formatted:
+                        type: string
+                        description: The localised delivery address.
+                      latitude:
+                        type: number
+                        format: double
+                      longitude:
+                        type: number
+                        format: double
+                  receiver:
+                    type: object
+                    description: The entity that will recieve the order.
+                    properties:
+                      name:
+                        type: string
+                      phone_number:
+                        type: string
+              '':
+                type: string
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid:
+                type: string
+                format: uuid
+                description: The unique identifier for the line item.
               name:
                 type: string
-                description: The name of the meal.
-              source_meal:
+                description: The name of the line item.
+              source_item:
                 type:
                   - string
                   - 'null'
                 format: uuid
                 description: |-
-                  The UUID of the meal on the merchant's menu that this meal was built from.
+                  The UUID of the item on the merchant's menu that this item was built from.
 
-                  This field will be `null` if the meal was manually entered via POS.
+                  This field will be `null` if the item was manually entered via POS.
 
                   This field is read-only once set.
+              qty:
+                type: integer
+                minimum: 1
+                description: The qty of the line item.
+              loyalty_redemption:
+                type: boolean
+                description: 'Indicates if this line-item is part of a loyalty redemption made by the customer, which indicates why the price is different from that of the `source_item`.'
+              base_price:
+                $ref: '#/components/schemas/Order/properties/total'
               modifiers:
                 type: array
-                description: The modifiers that were selected with the meal.
+                description: The modifiers that were selected with the line item.
                 items:
                   type: object
                   properties:
@@ -472,126 +856,219 @@ components:
                       minimum: 1
                       description: The qty of the modifier.
                     base_price:
-                      $ref: ../models/Money.v1.yaml
+                      $ref: '#/components/schemas/Order/properties/total'
                     sub_total:
-                      $ref: ../models/Money.v1.yaml
+                      $ref: '#/components/schemas/Order/properties/total'
                     total:
-                      $ref: ../models/Money.v1.yaml
-              base_price:
-                $ref: ../models/Money.v1.yaml
+                      $ref: '#/components/schemas/Order/properties/total'
+              meal:
+                type:
+                  - object
+                  - 'null'
+                description: The meal (if any) that was selected with the line item.
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                    description: The unique identifier for the meal.
+                  name:
+                    type: string
+                    description: The name of the meal.
+                  source_meal:
+                    type:
+                      - string
+                      - 'null'
+                    format: uuid
+                    description: |-
+                      The UUID of the meal on the merchant's menu that this meal was built from.
+
+                      This field will be `null` if the meal was manually entered via POS.
+
+                      This field is read-only once set.
+                  modifiers:
+                    type: array
+                    description: The modifiers that were selected with the meal.
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                          description: The unique identifier for the modifier.
+                        name:
+                          type: string
+                          description: The name of the modifier.
+                        source_modifier:
+                          type:
+                            - string
+                            - 'null'
+                          format: uuid
+                          description: |-
+                            The UUID of the modifier on the merchant's menu that this modifier was built from.
+
+                            This field will be `null` if the modifier was manually entered via POS.
+
+                            This field is read-only once set.
+                        qty:
+                          type: integer
+                          minimum: 1
+                          description: The qty of the modifier.
+                        base_price:
+                          $ref: '#/components/schemas/Order/properties/total'
+                        sub_total:
+                          $ref: '#/components/schemas/Order/properties/total'
+                        total:
+                          $ref: '#/components/schemas/Order/properties/total'
+                  base_price:
+                    $ref: '#/components/schemas/Order/properties/total'
+                  sub_total:
+                    $ref: '#/components/schemas/Order/properties/total'
+                  total:
+                    $ref: '#/components/schemas/Order/properties/total'
               sub_total:
-                $ref: ../models/Money.v1.yaml
+                $ref: '#/components/schemas/Order/properties/total'
+              discounts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    uuid:
+                      type: string
+                      format: uuid
+                      description: The unique identifier for the discount.
+                    name:
+                      type: string
+                      description: The name of the discount that was applied.
+                    value:
+                      $ref: '#/components/schemas/Order/properties/total'
+              total_discounts:
+                $ref: '#/components/schemas/Order/properties/total'
+              surcharges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    uuid:
+                      type: string
+                      format: uuid
+                      description: The unique identifier for the surcharge.
+                    name:
+                      type: string
+                      description: The name of the surcharge that was applied.
+                    value:
+                      $ref: '#/components/schemas/Order/properties/total'
+              total_surcharges:
+                $ref: '#/components/schemas/Order/properties/total'
+              taxes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    uuid:
+                      type: string
+                      format: uuid
+                      description: The unique identifier for the tax.
+                    name:
+                      type: string
+                      description: The name of the discount that was levied.
+                    value:
+                      $ref: '#/components/schemas/Order/properties/total'
+              total_taxes:
+                $ref: '#/components/schemas/Order/properties/total'
               total:
-                $ref: ../models/Money.v1.yaml
-          sub_total:
-            $ref: ../models/Money.v1.yaml
-          discounts:
-            type: array
-            items:
-              type: object
-              properties:
-                uuid:
-                  type: string
-                  format: uuid
-                  description: The unique identifier for the discount.
-                name:
-                  type: string
-                  description: The name of the discount that was applied.
-                value:
-                  $ref: ../models/Money.v1.yaml
-          total_discounts:
-            $ref: ../models/Money.v1.yaml
-          surcharges:
-            type: array
-            items:
-              type: object
-              properties:
-                uuid:
-                  type: string
-                  format: uuid
-                  description: The unique identifier for the surcharge.
-                name:
-                  type: string
-                  description: The name of the surcharge that was applied.
-                value:
-                  $ref: ../models/Money.v1.yaml
-          total_surcharges:
-            $ref: ../models/Money.v1.yaml
-          taxes:
-            type: array
-            items:
-              type: object
-              properties:
-                uuid:
-                  type: string
-                  format: uuid
-                  description: The unique identifier for the tax.
-                name:
-                  type: string
-                  description: The name of the discount that was levied.
-                value:
-                  $ref: ../models/Money.v1.yaml
-          total_taxes:
-            $ref: ../models/Money.v1.yaml
-          total:
-            $ref: ../models/Money.v1.yaml
-    customer_notes:
-      type:
-        - string
-        - 'null'
-      maxLength: 255
-      description: Notes entered by the customer at the time the order was placed.
-    merchant_notes:
-      type:
-        - string
-        - 'null'
-      maxLength: 255
-      description: 'Notes entered by the merchant, which can be edited at any time.'
-    sub_total:
-      $ref: ../models/Money.v1.yaml
-    discounts:
-      type: array
-      items:
-        type: object
-        properties:
-          name:
-            type: string
-            description: The name of the discount that was applied.
-          value:
-            $ref: ../models/Money.v1.yaml
-    total_discounts:
-      $ref: ../models/Money.v1.yaml
-    surcharges:
-      type: array
-      items:
-        type: object
-        properties:
-          name:
-            type: string
-            description: The name of the surcharge that was applied.
-          value:
-            $ref: ../models/Money.v1.yaml
-    total_surcharges:
-      $ref: ../models/Money.v1.yaml
-    taxes:
-      type: array
-      items:
-        type: object
-        properties:
-          name:
-            type: string
-            description: The name of the tax that was levied.
-          value:
-            $ref: ../models/Money.v1.yaml
-    total_taxes:
-      $ref: ../models/Money.v1.yaml
-    total:
-      $ref: ../models/Money.v1.yaml
-    cash_rounding:
-      $ref: ../models/Money.v1.yaml
-    balance:
-      $ref: ../models/Money.v1.yaml
-    transactions:
-      type: array
-      description: The transactions/payments that have been made against this order.
-      items: {}
+                $ref: '#/components/schemas/Order/properties/total'
+        customer_notes:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+          description: Notes entered by the customer at the time the order was placed.
+        merchant_notes:
+          type:
+            - string
+            - 'null'
+          maxLength: 255
+          description: 'Notes entered by the merchant, which can be edited at any time.'
+        sub_total:
+          $ref: '#/components/schemas/Order/properties/total'
+        discounts:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the discount that was applied.
+              value:
+                $ref: '#/components/schemas/Order/properties/total'
+        total_discounts:
+          $ref: '#/components/schemas/Order/properties/total'
+        surcharges:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the surcharge that was applied.
+              value:
+                $ref: '#/components/schemas/Order/properties/total'
+        total_surcharges:
+          $ref: '#/components/schemas/Order/properties/total'
+        taxes:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the tax that was levied.
+              value:
+                $ref: '#/components/schemas/Order/properties/total'
+        total_taxes:
+          $ref: '#/components/schemas/Order/properties/total'
+        total:
+          title: Money
+          type: object
+          x-tags:
+            - models
+          description: Represents a monetary amount.
+          properties:
+            amount:
+              type: integer
+              description: |-
+                The amount/value in the lowest possible unit of the associated currency.
+
+                For example, a value of `100` with a currency of `SGD` means $1.00.
+              minimum: 0
+            currency:
+              type: string
+              description: An ISO 4217 alpha-3 currency code.
+              example: SGD
+              minLength: 3
+              maxLength: 3
+        cash_rounding:
+          $ref: '#/components/schemas/Order/properties/total'
+        balance:
+          $ref: '#/components/schemas/Order/properties/total'
+        transactions:
+          type: array
+          description: The transactions/payments that have been made against this order.
+          items: {}
+  securitySchemes:
+    X-POS-AUTH:
+      type: apiKey
+      in: header
+      name: X-POS-AUTH
+      description: |-
+        The unique authorization token that is assigned to each POS terminal after activation.
+
+        This header must be sent on all subsequent requests to the POS API.
+tags:
+  - name: installation-profile
+  - name: websockets
+  - name: models
+  - name: configuration
+  - name: linking-codes
+security:
+  - X-POS-AUTH: []
