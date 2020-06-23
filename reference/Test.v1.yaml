@@ -11,5 +11,12 @@ paths:
       tags: []
       responses: {}
       operationId: get-help
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: number
+              format: float
+      description: ''
 components:
   schemas: {}

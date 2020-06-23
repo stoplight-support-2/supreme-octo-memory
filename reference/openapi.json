@@ -1,0 +1,2836 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Wflow API Documentation",
+    "description": "Wflow API allow developers to request information from the wflow platform including but not limited to documents details, download documents or files, etc. as well as perform actions on the wflow platform on a user�s behalf, such as, creating a new document or deleting documents, upload files.</br></br>**Global route parameters:**</br></br>***{organization}***: Organization workspace name",
+    "contact": {
+      "name": "Developer support",
+      "url": "https://www.wflow.com",
+      "email": "developersupport@wflow.com"
+    },
+    "license": {
+      "name": "Use under MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://api.wflow.com",
+      "description": "Production server"
+    },
+    {
+      "url": "https://apitest.wflow.com",
+      "description": "Test server"
+    }
+  ],
+  "paths": {
+    "/api/{organization}/documents/{documentId}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Document",
+        "description": "Returns the document with the given Id",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "Document Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the document with the given Id as object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents": {
+      "put": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Add or update document",
+        "description": "Adds or modifies the document.\r\nIf Id is not specified in the document object, the document will be added. Unspecified property values are not updated.",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Document object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            },
+            "text/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            },
+            "application/*+xml": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns the added/updated document Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents/{documentId}/files/upload": {
+      "put": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Upload attached file to document",
+        "description": "Uploads the file as attached to the document. If you set the *main* attribute, this file will be marked as the main attachment.\r\nThe original main file becomes a regular attachment.",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "Document Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "main",
+            "in": "query",
+            "description": "Main file attribute",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns uploaded file Id"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents/toextract": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "List documents to extract",
+        "description": "Returns a list of document Ids ready to be extracted",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns List of Document Ids",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents/toexport": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "List documents to ERP export",
+        "description": "Returns a list of document Ids ready to be sent to ERP",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns List of Document Ids",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents/{documentId}/files/main/download": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Download main document file",
+        "description": "Downloads the document file marked as main.\r\nThere can be only one main file in a collection of document files.",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "Downloaded file parent document Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns content of the file as a stream (blob)"
+          },
+          "204": {
+            "description": "If the content of the file is not found or is empty"
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/documents/{documentId}/task/{taskType}/processed": {
+      "put": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Set task processing result",
+        "description": "Sets the status of the task processing result.",
+        "parameters": [
+          {
+            "name": "documentId",
+            "in": "path",
+            "description": "Document's task Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskType",
+            "in": "path",
+            "description": "Task type",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TaskType"
+            }
+          },
+          {
+            "name": "success",
+            "in": "query",
+            "description": "Processing result: *true* if the processing was successful otherwise *false*",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "description": "Processing result text message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/registers/activities": {
+      "put": {
+        "tags": [
+          "Registers"
+        ],
+        "summary": "Update Activities",
+        "description": "Adds or updates the Activities register entries.\r\nThe existence of the register entry is verified on the basis of the external Id. \r\nIf it is not filled in, the code will be used in its place. The whole set is always updated. \r\nEntries that are not in the imported list are marked as invalid in the destination list.",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Activities list",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No result"
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/registers/contracts": {
+      "put": {
+        "tags": [
+          "Registers"
+        ],
+        "summary": "Update Contracts",
+        "description": "Adds or updates the Contracts register entries.\r\nThe existence of the register entry is verified on the basis of the external Id. \r\nIf it is not filled in, the code will be used in its place. The whole set is always updated. \r\nEntries that are not in the imported list are marked as invalid in the destination list.",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Activities list",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No result"
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/{organization}/registers/costcenters": {
+      "put": {
+        "tags": [
+          "Registers"
+        ],
+        "summary": "Update Cost centers",
+        "description": "Adds or updates the Cost centers register entries.\r\nThe existence of the register entry is verified on the basis of the external Id. \r\nIf it is not filled in, the code will be used in its place. The whole set is always updated. \r\nEntries that are not in the imported list are marked as invalid in the destination list.",
+        "parameters": [
+          {
+            "name": "organization",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Activities list",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "text/xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "application/*+xml": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No result"
+          },
+          "400": {
+            "description": "If the mandatory parameters are not filled in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/users/myorganizations": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "List of user accessible organizations",
+        "description": "Returns a list of organizations to which the user has access",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationDomain"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationDomain"
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationDomain"
+                  }
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationDomain"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2Implicit": [
+              "uccl_common_api"
+            ],
+            "oauth2Client": [
+              "uccl_common_api"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ValidationErrorMessage": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Massage key",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Message text",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorMessage"
+            },
+            "description": "Validation error message list",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Type",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Title",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code([RFC7231], Section 6)",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "description": "Detailed information (data, description, stack trace, ...)",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Title",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code([RFC7231], Section 6)",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "description": "Detailed information (data, description, stack trace, ...)",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "KindOfDocument": {
+        "enum": [
+          "IncomingInvoice",
+          "OutgoingInvoice",
+          "ExpenditureCashSlip",
+          "SupplierOrder",
+          "CustomerOrder",
+          "Other"
+        ],
+        "type": "string",
+        "description": "Document kinds"
+      },
+      "DocCreatingMethodType": {
+        "enum": [
+          "Upload",
+          "Manually"
+        ],
+        "type": "string",
+        "description": "Document creating method"
+      },
+      "DocumentType": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Name",
+            "nullable": true
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindOfDocument"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "Use as default attribute"
+          },
+          "extractionAutoSend": {
+            "type": "boolean",
+            "description": "Automatic send to data extraction attribute"
+          },
+          "erpAutoSend": {
+            "type": "boolean",
+            "description": "Automatic send to ERP attribute"
+          },
+          "erpExclude": {
+            "type": "boolean",
+            "description": "Exclude from sending to ERP attribute"
+          },
+          "filesExtendName": {
+            "type": "boolean",
+            "description": "Uploaded files from e-mail name extension"
+          },
+          "docCreatingMethod": {
+            "$ref": "#/components/schemas/DocCreatingMethodType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvoiceType": {
+        "enum": [
+          "TaxInvoice",
+          "CreditNote",
+          "DebitNote",
+          "Proforma",
+          "TaxInvoicePayment"
+        ],
+        "type": "string",
+        "description": "Invoice type"
+      },
+      "Register": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External Id",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "description": "Validity attribute"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Partner": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External Id",
+            "nullable": true
+          },
+          "ic": {
+            "type": "string",
+            "description": "ID",
+            "nullable": true
+          },
+          "vat": {
+            "type": "string",
+            "description": "VAT ID",
+            "nullable": true
+          },
+          "localVAT": {
+            "type": "string",
+            "description": "Local VAT ID",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Name",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "description": "Address (street, post code, town, country,...)",
+            "nullable": true
+          },
+          "accountNo": {
+            "type": "string",
+            "description": "Bank account No",
+            "nullable": true
+          },
+          "bankCode": {
+            "type": "string",
+            "description": "Bank code",
+            "nullable": true
+          },
+          "iban": {
+            "type": "string",
+            "description": "IBAN",
+            "nullable": true
+          },
+          "bic": {
+            "type": "string",
+            "description": "BIC code (SWIFT)",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "description": "Notes",
+            "nullable": true
+          },
+          "phoneNo": {
+            "type": "string",
+            "description": "Phone No",
+            "nullable": true
+          },
+          "mailAddress": {
+            "type": "string",
+            "description": "E-mail address",
+            "nullable": true
+          },
+          "deliveryPeriod": {
+            "type": "integer",
+            "description": "Standard delivery period in days",
+            "format": "int32",
+            "nullable": true
+          },
+          "minOrderTotal": {
+            "type": "number",
+            "description": "Minimal order amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "toleranceRate": {
+            "type": "integer",
+            "description": "Automatic pairing tolerance threshold by total amount",
+            "format": "int32"
+          },
+          "language": {
+            "type": "string",
+            "description": "Primary language",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "Primary currency",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "description": "Validity attribute"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Approval": {
+        "enum": [
+          "None",
+          "NotApproved",
+          "Approved",
+          "Rejected",
+          "Returned"
+        ],
+        "type": "string"
+      },
+      "ApprovalAction": {
+        "enum": [
+          "AddNew",
+          "ChangeLast"
+        ],
+        "type": "string"
+      },
+      "ApprovalStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/Approval"
+          },
+          "processed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "action": {
+            "$ref": "#/components/schemas/ApprovalAction"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FlowStatus": {
+        "enum": [
+          "NotConfirmed",
+          "New",
+          "SendToExtractionWaiting",
+          "SendToExtractionError",
+          "SendToExtractionOK",
+          "Filled",
+          "Extracted",
+          "Sent",
+          "Delivered",
+          "SendToERPWaiting",
+          "SendToERPError",
+          "SendedToERP"
+        ],
+        "type": "string",
+        "description": "Processing statuses"
+      },
+      "VATType": {
+        "enum": [
+          "Exempt",
+          "FirstReduced",
+          "SecondReduced",
+          "Basic"
+        ],
+        "type": "string",
+        "description": "VAT types"
+      },
+      "DocumentVAT": {
+        "type": "object",
+        "properties": {
+          "rate": {
+            "type": "number",
+            "description": "VAT percent rate (decimal (4,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/VATType"
+          },
+          "base": {
+            "type": "number",
+            "description": "VAT base amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "tax": {
+            "type": "number",
+            "description": "VAT tax amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentLine": {
+        "type": "object",
+        "properties": {
+          "costCenter": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "totalAmountFC": {
+            "type": "number",
+            "description": "Total amonut in foriegn currency (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "accountCode": {
+            "type": "string",
+            "description": "Accounting account code",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency ISO code (fixed length 3 chars)",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Item code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity (decimal (14,6))",
+            "format": "double",
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price (decimal (14,6))",
+            "format": "double",
+            "nullable": true
+          },
+          "vatType": {
+            "$ref": "#/components/schemas/VATType"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Item order index in list",
+            "format": "int32",
+            "nullable": true
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT percent rate (decimal (4,2))",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "number": {
+            "type": "string",
+            "description": "Number",
+            "nullable": true
+          },
+          "internalCode": {
+            "type": "string",
+            "description": "Internal code",
+            "nullable": true
+          },
+          "vatDocumentCode": {
+            "type": "string",
+            "description": "VAT code",
+            "nullable": true
+          },
+          "variableSymbol": {
+            "type": "string",
+            "description": "Variable symbol",
+            "nullable": true
+          },
+          "constantSymbol": {
+            "type": "string",
+            "description": "Constant symbol",
+            "nullable": true
+          },
+          "specificSymbol": {
+            "type": "string",
+            "description": "Specific symbol",
+            "nullable": true
+          },
+          "issueDate": {
+            "type": "string",
+            "description": "Issue date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "vatDate": {
+            "type": "string",
+            "description": "VAT date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acceptDate": {
+            "type": "string",
+            "description": "Accept date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "caseDate": {
+            "type": "string",
+            "description": "Case date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "accountTerm": {
+            "type": "string",
+            "description": "Accounting period (yyyy/mm)",
+            "nullable": true
+          },
+          "vatTerm": {
+            "type": "string",
+            "description": "VAT period (yyyy/mm)",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "roundingAmount": {
+            "type": "number",
+            "description": "Rounding ammount (decimal (3,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "paidAmount": {
+            "type": "number",
+            "description": "Paid amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "totalAmountFC": {
+            "type": "number",
+            "description": "Total amonut in foriegn currency (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency ISO code (fixed length 3 chars)",
+            "nullable": true
+          },
+          "partnerIC": {
+            "type": "string",
+            "description": "Partner ID",
+            "nullable": true
+          },
+          "partnerVAT": {
+            "type": "string",
+            "description": "Partner VAT ID",
+            "nullable": true
+          },
+          "partnerLocalVAT": {
+            "type": "string",
+            "description": "Partner local VAT ID",
+            "nullable": true
+          },
+          "partnerName": {
+            "type": "string",
+            "description": "Partner name",
+            "nullable": true
+          },
+          "partnerAddress": {
+            "type": "string",
+            "description": "Partner address (street, post code, town, country,...)",
+            "nullable": true
+          },
+          "partnerEmail": {
+            "type": "string",
+            "description": "Partner e-mail address",
+            "nullable": true
+          },
+          "accountNo": {
+            "type": "string",
+            "description": "Partner bank account No",
+            "nullable": true
+          },
+          "bankCode": {
+            "type": "string",
+            "description": "Partner bank code",
+            "nullable": true
+          },
+          "iban": {
+            "type": "string",
+            "description": "Partner IBAN",
+            "nullable": true
+          },
+          "bic": {
+            "type": "string",
+            "description": "Partner BIC code (SWIFT)",
+            "nullable": true
+          },
+          "exchangeRate": {
+            "type": "number",
+            "description": "Exchange rate",
+            "format": "double",
+            "nullable": true
+          },
+          "exchangeRateUnits": {
+            "type": "integer",
+            "description": "Exchange rate units",
+            "format": "int32",
+            "nullable": true
+          },
+          "tag": {
+            "type": "string",
+            "description": "Special document identification",
+            "nullable": true
+          },
+          "orderNo": {
+            "type": "string",
+            "description": "Linked order number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Document description",
+            "nullable": true
+          },
+          "invoiceType": {
+            "$ref": "#/components/schemas/InvoiceType"
+          },
+          "expectedDeliveryDate": {
+            "type": "string",
+            "description": "Expected delivery date - for orders only (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "accountCode": {
+            "type": "string",
+            "description": "Accounting account code",
+            "nullable": true
+          },
+          "businessItemCode": {
+            "type": "string",
+            "description": "Business item code",
+            "nullable": true
+          },
+          "costCenter": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/Register"
+          },
+          "partner": {
+            "$ref": "#/components/schemas/Partner"
+          },
+          "created": {
+            "type": "string",
+            "description": "Creation date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "description": "Last update date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time"
+          },
+          "removed": {
+            "type": "string",
+            "description": "Remove date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "locked": {
+            "type": "boolean",
+            "description": "Locked attribute"
+          },
+          "approval": {
+            "$ref": "#/components/schemas/ApprovalStatus"
+          },
+          "flowStatus": {
+            "$ref": "#/components/schemas/FlowStatus"
+          },
+          "vaTs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentVAT"
+            },
+            "description": "VAT subtotals",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentLine"
+            },
+            "description": "Lines list",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentUpdateType": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Name",
+            "nullable": true
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindOfDocument"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentUpdateRegister": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External Id",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Code",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentUpdatePartner": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentUpdateLine": {
+        "type": "object",
+        "properties": {
+          "costCenter": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "totalAmountFC": {
+            "type": "number",
+            "description": "Total amonut in foriegn currency (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "accountCode": {
+            "type": "string",
+            "description": "Accounting account code",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency ISO code (fixed length 3 chars)",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Item code",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity (decimal (14,6))",
+            "format": "double",
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "Unit price (decimal (14,6))",
+            "format": "double",
+            "nullable": true
+          },
+          "vatType": {
+            "$ref": "#/components/schemas/VATType"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Item order index in list",
+            "format": "int32",
+            "nullable": true
+          },
+          "vatRate": {
+            "type": "number",
+            "description": "VAT percent rate (decimal (4,2))",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentUpdate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "uuid",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/DocumentUpdateType"
+          },
+          "number": {
+            "type": "string",
+            "description": "Number",
+            "nullable": true
+          },
+          "internalCode": {
+            "type": "string",
+            "description": "Internal code",
+            "nullable": true
+          },
+          "vatDocumentCode": {
+            "type": "string",
+            "description": "VAT code",
+            "nullable": true
+          },
+          "variableSymbol": {
+            "type": "string",
+            "description": "Variable symbol",
+            "nullable": true
+          },
+          "constantSymbol": {
+            "type": "string",
+            "description": "Constant symbol",
+            "nullable": true
+          },
+          "specificSymbol": {
+            "type": "string",
+            "description": "Specific symbol",
+            "nullable": true
+          },
+          "issueDate": {
+            "type": "string",
+            "description": "Issue date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "vatDate": {
+            "type": "string",
+            "description": "VAT date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acceptDate": {
+            "type": "string",
+            "description": "Accept date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "caseDate": {
+            "type": "string",
+            "description": "Case date (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "accountTerm": {
+            "type": "string",
+            "description": "Accounting period (yyyy/mm)",
+            "nullable": true
+          },
+          "vatTerm": {
+            "type": "string",
+            "description": "VAT period (yyyy/mm)",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "roundingAmount": {
+            "type": "number",
+            "description": "Rounding ammount (decimal (3,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "paidAmount": {
+            "type": "number",
+            "description": "Paid amount (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "totalAmountFC": {
+            "type": "number",
+            "description": "Total amonut in foriegn currency (decimal (18,2))",
+            "format": "double",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency ISO code (fixed length 3 chars)",
+            "nullable": true
+          },
+          "partnerIC": {
+            "type": "string",
+            "description": "Partner ID",
+            "nullable": true
+          },
+          "partnerVAT": {
+            "type": "string",
+            "description": "Partner VAT ID",
+            "nullable": true
+          },
+          "partnerLocalVAT": {
+            "type": "string",
+            "description": "Partner local VAT ID",
+            "nullable": true
+          },
+          "partnerName": {
+            "type": "string",
+            "description": "Partner name",
+            "nullable": true
+          },
+          "partnerAddress": {
+            "type": "string",
+            "description": "Partner address (street, post code, town, country,...)",
+            "nullable": true
+          },
+          "partnerEmail": {
+            "type": "string",
+            "description": "Partner e-mail address",
+            "nullable": true
+          },
+          "accountNo": {
+            "type": "string",
+            "description": "Partner bank account No",
+            "nullable": true
+          },
+          "bankCode": {
+            "type": "string",
+            "description": "Partner bank code",
+            "nullable": true
+          },
+          "iban": {
+            "type": "string",
+            "description": "Partner IBAN",
+            "nullable": true
+          },
+          "bic": {
+            "type": "string",
+            "description": "Partner BIC code (SWIFT)",
+            "nullable": true
+          },
+          "exchangeRate": {
+            "type": "number",
+            "description": "Exchange rate",
+            "format": "double",
+            "nullable": true
+          },
+          "exchangeRateUnits": {
+            "type": "integer",
+            "description": "Exchange rate units",
+            "format": "int32",
+            "nullable": true
+          },
+          "tag": {
+            "type": "string",
+            "description": "Special document identification",
+            "nullable": true
+          },
+          "orderNo": {
+            "type": "string",
+            "description": "Linked order number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Document description",
+            "nullable": true
+          },
+          "invoiceType": {
+            "$ref": "#/components/schemas/InvoiceType"
+          },
+          "expectedDeliveryDate": {
+            "type": "string",
+            "description": "Expected delivery date - for orders only (yyyy-mm-ddThh:mm:ss.mmmZ)",
+            "format": "date-time",
+            "nullable": true
+          },
+          "accountCode": {
+            "type": "string",
+            "description": "Accounting account code",
+            "nullable": true
+          },
+          "businessItemCode": {
+            "type": "string",
+            "description": "Business item code",
+            "nullable": true
+          },
+          "costCenter": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "activity": {
+            "$ref": "#/components/schemas/DocumentUpdateRegister"
+          },
+          "partner": {
+            "$ref": "#/components/schemas/DocumentUpdatePartner"
+          },
+          "vaTs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentVAT"
+            },
+            "description": "VAT subtotals",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentUpdateLine"
+            },
+            "description": "Lines list",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TaskType": {
+        "enum": [
+          "Extract",
+          "Export"
+        ],
+        "type": "string"
+      },
+      "OrganizationDomain": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Organization name",
+            "nullable": true,
+            "example": "Noname Ltd."
+          },
+          "baseURL": {
+            "type": "string",
+            "description": "Organization workspace base URL",
+            "nullable": true,
+            "example": "nonameorg.wflow.com"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "oauth2Implicit": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://account.wflow.com/connect/authorize",
+            "scopes": {
+              "uccl_common_api": "Common API - full access"
+            }
+          }
+        }
+      },
+      "oauth2Client": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://account.wflow.com/connect/token",
+            "scopes": {
+              "uccl_common_api": "Common API - full access"
+            }
+          }
+        }
+      }
+    }
+  }
+}
