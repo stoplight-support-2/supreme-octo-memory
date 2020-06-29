@@ -28,7 +28,6 @@ paths:
                       type:
                         - string
                         - boolean
-                        - 'null'
               type: object
             examples: {}
         description: ''
