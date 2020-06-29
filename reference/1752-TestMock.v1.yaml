@@ -26,9 +26,19 @@ paths:
             schema:
               anyOf:
                 - properties:
-                    '':
-                      type: string
+                    housePurchase:
+                      type:
+                        - string
+                        - 'null'
+                        - boolean
+                    remortgage:
+                      type:
+                        - string
+                        - 'null'
+                        - boolean
               type: object
+            examples:
+              example-1: {}
 components:
   schemas:
     '400':
