@@ -21,7 +21,6 @@ paths:
                 - properties:
                     remortgage:
                       type:
-                        - string
                         - boolean
                         - 'null'
                     housePurchase:
