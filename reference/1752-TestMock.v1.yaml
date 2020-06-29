@@ -29,6 +29,10 @@ paths:
                         - string
                         - 'null'
                         - boolean
+                    neither:
+                      type:
+                        - boolean
+                        - 'null'
               type: object
             examples: {}
 components:
