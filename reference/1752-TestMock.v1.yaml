@@ -20,6 +20,15 @@ paths:
                 $ref: '#/components/schemas/400'
               examples: {}
       operationId: get-addresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - properties:
+                    '':
+                      type: string
+              type: object
 components:
   schemas:
     '400':
@@ -36,7 +45,7 @@ components:
           code: '400'
           message: model-level 400 message
       description: 400 message
-  Order:
+  Order: null
   title: Order
   type: object
   x-tags:
@@ -79,7 +88,7 @@ components:
       type:
         - 'null'
         - object
-      description: "The customer's details, if provided at the time the order was placed."
+      description: 'The customer''s details, if provided at the time the order was placed.'
       properties:
         uuid:
           type: string
@@ -100,7 +109,7 @@ components:
             - string
             - 'null'
           format: email
-          description: "The customer's email address, if known."
+          description: 'The customer''s email address, if known.'
     source:
       type: string
       description: The name of the application where the order was placed.
@@ -129,7 +138,7 @@ components:
             description: The type of fulfilment.
           on_hold:
             type: boolean
-            description: 'Indiciates if the fulfilment is "on hold" until futher notice.'
+            description: Indiciates if the fulfilment is "on hold" until futher notice.
           collection_details:
             format: date-time
             type:
