@@ -37,8 +37,7 @@ paths:
                         - 'null'
                         - boolean
               type: object
-            examples:
-              example-1: {}
+            examples: {}
 components:
   schemas:
     '400':
